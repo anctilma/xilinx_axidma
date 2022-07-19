@@ -95,14 +95,14 @@ static int axidma_of_parse_channel(struct device_node *dma_node, int channel,
 
     // Go to the child node that we're parsing
     dma_chan_node = of_get_next_child(dma_node, NULL);
-    if (channel == 1) {
+    if (channel == 0) {
         dma_chan_node = of_get_next_child(dma_node, dma_chan_node);
     }
 
     // Check if the specified node exists
     if (dma_chan_node == NULL) {
-        axidma_node_err(dma_chan_node, "Unable to find child node number %d.\n",
-                channel);
+        axidma_err("Unable to find child node number %d.\n", channel);
+        return -EINVAL;
     }
 
     // Read out the channel's unique device id, and put it in the structure
@@ -218,16 +218,14 @@ int axidma_of_parse_dma_nodes(struct platform_device *pdev,
     dev->num_vdma_tx_chans = 0;
     dev->num_vdma_rx_chans = 0;
 
-    /* For each DMA channel specified in the deivce tree, parse out the
+    /* For each DMA channel specified in the device tree, parse out the
      * information about the channel, namely its direction and type. */
     for (i = 0; i < dev->num_chans; i++)
     {
         // Get the phanlde to the DMA channel
-        rc = of_parse_phandle_with_args(driver_node, "dmas", "#dma-cells", i,
-                                        &phandle_args);
+        rc = of_parse_phandle_with_args(driver_node, "dmas", "#dma-cells", i, &phandle_args);
         if (rc < 0) {
-            axidma_node_err(driver_node, "Unable to get phandle %d from the "
-                            "'dmas' property.\n", i);
+            axidma_node_err(driver_node, "Unable to get phandle %d from the 'dmas' property.\n", i);
             return rc;
         }
 
@@ -236,7 +234,7 @@ int axidma_of_parse_dma_nodes(struct platform_device *pdev,
         channel = phandle_args.args[0];
         if (phandle_args.args_count < 1) {
             axidma_node_err(driver_node, "Phandle %d in the 'dmas' property is "
-                            "is missing the channel direciton argument.\n", i);
+                            "is missing the channel direction argument.\n", i);
             return -EINVAL;
         } else if (channel != 0 && channel != 1) {
             axidma_node_err(driver_node, "Phandle %d in the 'dmas' property "

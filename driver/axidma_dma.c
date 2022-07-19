@@ -143,7 +143,7 @@ static struct axidma_chan *axidma_get_chan(struct axidma_device *dev,
 static void axidma_dma_callback(void *data)
 {
     struct axidma_cb_data *cb_data;
-    struct siginfo sig_info;
+    struct kernel_siginfo sig_info;
 
     /* For synchronous transfers, notify the kernel thread waiting. For
      * asynchronous transfers, send a signal to userspace if requested. */
@@ -646,7 +646,7 @@ static int axidma_request_channels(struct platform_device *pdev,
     for (i = 0; i < dev->num_chans; i++)
     {
         chan = &dev->channels[i];
-        chan->chan = dma_request_slave_channel(&pdev->dev, chan->name);
+        chan->chan = dma_request_chan(&pdev->dev, chan->name);
         if (chan->chan == NULL) {
             axidma_err("Unable to get slave channel %d: %s.\n", i, chan->name);
             rc = -ENODEV;
